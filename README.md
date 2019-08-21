@@ -10,17 +10,18 @@ Since Ubuntu 18.x these NICs are being used with the default r8169 driver (which
 How to install this driver?
 ----
 * First of all, clone this repo to some folder and cd into that folder
-* Install basic dependencies for compiling the driver: `sudo apt-get install build-essential linux-headers-$(uname -r)`
-* Block the existing r8169 driver in modprobe: `sudo sh -c 'echo blacklist r8169 >> /etc/modprobe.d/blacklist.conf'`
+* Install basic dependencies for compiling the driver: `sudo apt install build-essential linux-headers-$(uname -r)`
+* Unload the existing r8169 driver: `sudo modprobe -r r8169`
+* Block the r8169 driver in modprobe: `sudo sh -c 'echo blacklist r8169 >> /etc/modprobe.d/blacklist.conf'`
 * Run the automatic build & install script: `sudo ./autorun.sh`. Ignore errors if any.
 * Check if the driver is loaded: `lsmod | grep r8101`, it will return a single line like `r8101                 204800  0`
+* If the driver is not loaded, then run `sudo modprobe r8101`.
 * Now try connecting. If you don't see the connection then you might need a reboot.
 * Enjoy ethernet speeds upto 100Mbps!
 
-
 Some additional info
 ----
-
+```
 <Set the network related information>
 	1. Set manually
 		a. Set the IP address of your machine.
@@ -82,7 +83,7 @@ Some additional info
 
 		# insmod ./src/r8101.ko speed=SPEED_MODE duplex=DUPLEX_MODE autoneg=NWAY_OPTION
 
-		,where
+		where
 			SPEED_MODE	= 100	for 100Mbps
 					= 10	for 10Mbps
 			DUPLEX_MODE	= 0	for half-duplex
@@ -102,7 +103,7 @@ Some additional info
 
 			# ethtool -s ethX speed SPEED_MODE duplex DUPLEX_MODE autoneg NWAY_OPTION
 
-			,where
+			where
 				SPEED_MODE	= 100	for 100Mbps
 						= 10	for 10Mbps
 				DUPLEX_MODE	= half	for half-duplex
@@ -118,3 +119,4 @@ Some additional info
 
 <Jumbo Frame>
 	RTL8101E, RTL8102E and RTL8103E do not support Jumbo Frame.
+```
