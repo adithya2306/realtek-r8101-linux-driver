@@ -4,7 +4,7 @@
 # r8101 is the Linux device driver released for Realtek Fast Ethernet
 # controllers with PCI-Express interface.
 #
-# Copyright(c) 2019 Realtek Semiconductor Corp. All rights reserved.
+# Copyright(c) 2020 Realtek Semiconductor Corp. All rights reserved.
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -98,7 +98,7 @@ int rtl8101_tool_ioctl(struct rtl8101_private *tp, struct ifreq *ifr)
                         return -EPERM;
 
                 spin_lock_irqsave(&tp->lock, flags);
-                my_cmd.data = rtl8101_mdio_read(tp, my_cmd.offset);
+                my_cmd.data = rtl8101_mdio_prot_read(tp, my_cmd.offset);
                 spin_unlock_irqrestore(&tp->lock, flags);
 
                 if (copy_to_user(ifr->ifr_data, &my_cmd, sizeof(struct rtltool_cmd))) {
@@ -122,7 +122,7 @@ int rtl8101_tool_ioctl(struct rtl8101_private *tp, struct ifreq *ifr)
                         return -EPERM;
 
                 spin_lock_irqsave(&tp->lock, flags);
-                my_cmd.data = rtl8101_ephy_read(tp->mmio_addr, my_cmd.offset);
+                my_cmd.data = rtl8101_ephy_read(tp, my_cmd.offset);
                 spin_unlock_irqrestore(&tp->lock, flags);
 
                 if (copy_to_user(ifr->ifr_data, &my_cmd, sizeof(struct rtltool_cmd))) {
@@ -137,7 +137,7 @@ int rtl8101_tool_ioctl(struct rtl8101_private *tp, struct ifreq *ifr)
                         return -EPERM;
 
                 spin_lock_irqsave(&tp->lock, flags);
-                rtl8101_ephy_write(tp->mmio_addr, my_cmd.offset, my_cmd.data);
+                rtl8101_ephy_write(tp, my_cmd.offset, my_cmd.data);
                 spin_unlock_irqrestore(&tp->lock, flags);
                 break;
 
@@ -145,7 +145,7 @@ int rtl8101_tool_ioctl(struct rtl8101_private *tp, struct ifreq *ifr)
                 my_cmd.data = 0;
                 if (my_cmd.len==1 || my_cmd.len==2 || my_cmd.len==4) {
                         spin_lock_irqsave(&tp->lock, flags);
-                        my_cmd.data = rtl8101_eri_read(tp->mmio_addr, my_cmd.offset, my_cmd.len, ERIAR_ExGMAC);
+                        my_cmd.data = rtl8101_eri_read(tp, my_cmd.offset, my_cmd.len, ERIAR_ExGMAC);
                         spin_unlock_irqrestore(&tp->lock, flags);
                 } else {
                         ret = -EOPNOTSUPP;
@@ -168,7 +168,7 @@ int rtl8101_tool_ioctl(struct rtl8101_private *tp, struct ifreq *ifr)
 
                 if (my_cmd.len==1 || my_cmd.len==2 || my_cmd.len==4) {
                         spin_lock_irqsave(&tp->lock, flags);
-                        my_cmd.data = rtl8101_eri_write(tp->mmio_addr, my_cmd.offset, my_cmd.len, my_cmd.data, ERIAR_ExGMAC);
+                        my_cmd.data = rtl8101_eri_write(tp, my_cmd.offset, my_cmd.len, my_cmd.data, ERIAR_ExGMAC);
                         spin_unlock_irqrestore(&tp->lock, flags);
                 } else {
                         ret = -EOPNOTSUPP;

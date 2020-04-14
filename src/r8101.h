@@ -4,7 +4,7 @@
 # r8101 is the Linux device driver released for Realtek Fast Ethernet
 # controllers with PCI-Express interface.
 #
-# Copyright(c) 2019 Realtek Semiconductor Corp. All rights reserved.
+# Copyright(c) 2020 Realtek Semiconductor Corp. All rights reserved.
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -240,6 +240,14 @@ do { \
 #define SUPPORTED_Asym_Pause  (1 << 14)
 #endif
 
+#ifndef  MDIO_EEE_100TX
+#define  MDIO_EEE_100TX  0x0002
+#endif
+
+#ifndef  MDIO_EEE_1000T
+#define  MDIO_EEE_1000T  0x0004
+#endif
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,29)
 #ifdef CONFIG_NET_POLL_CONTROLLER
 #define RTL_NET_POLL_CONTROLLER dev->poll_controller=rtl8101_netpoll
@@ -296,18 +304,20 @@ do { \
 
 #define NODE_ADDRESS_SIZE	6
 
+#define RTK_MAGIC_DEBUG_VALUE 0x0badbeef
+
 #ifdef CONFIG_R8101_NAPI
 #define NAPI_SUFFIX		"-NAPI"
 #else
 #define NAPI_SUFFIX		""
 #endif
 
-#define RTL8101_VERSION "1.034.03" NAPI_SUFFIX
+#define RTL8101_VERSION "1.035.02" NAPI_SUFFIX
 #define MODULENAME "r8101"
 #define PFX MODULENAME ": "
 
 #define GPL_CLAIM "\
-r8101  Copyright (C) 2019  Realtek NIC software team <nicfae@realtek.com> \n \
+r8101  Copyright (C) 2020  Realtek NIC software team <nicfae@realtek.com> \n \
 This program comes with ABSOLUTELY NO WARRANTY; for details, please see <http://www.gnu.org/licenses/>. \n \
 This is free software, and you are welcome to redistribute it under certain conditions; see <http://www.gnu.org/licenses/>. \n"
 
@@ -325,9 +335,6 @@ This is free software, and you are welcome to redistribute it under certain cond
 
 #define R8101_MSG_DEFAULT \
 	(NETIF_MSG_DRV | NETIF_MSG_PROBE | NETIF_MSG_IFUP | NETIF_MSG_IFDOWN)
-
-#define TX_BUFFS_AVAIL(tp) \
-	(tp->dirty_tx + NUM_TX_DESC - tp->cur_tx - 1)
 
 #ifdef CONFIG_R8101_NAPI
 #define rtl8101_rx_hwaccel_skb		vlan_hwaccel_receive_skb
@@ -388,12 +395,12 @@ This is free software, and you are welcome to redistribute it under certain cond
 #define RTL_PCI_VENDOR_ID	0x10ec
 
 /* write/read MMIO register */
-#define RTL_W8(reg, val8)	writeb ((val8), ioaddr + (reg))
-#define RTL_W16(reg, val16)	writew ((val16), ioaddr + (reg))
-#define RTL_W32(reg, val32)	writel ((val32), ioaddr + (reg))
-#define RTL_R8(reg)		readb (ioaddr + (reg))
-#define RTL_R16(reg)		readw (ioaddr + (reg))
-#define RTL_R32(reg)		((unsigned long) readl (ioaddr + (reg)))
+#define RTL_W8(tp, reg, val8)	writeb((val8), tp->mmio_addr + (reg))
+#define RTL_W16(tp, reg, val16)	writew((val16), tp->mmio_addr + (reg))
+#define RTL_W32(tp, reg, val32)	writel((val32), tp->mmio_addr + (reg))
+#define RTL_R8(tp, reg)		readb(tp->mmio_addr + (reg))
+#define RTL_R16(tp, reg)		readw(tp->mmio_addr + (reg))
+#define RTL_R32(tp, reg)		((unsigned long) readl(tp->mmio_addr + (reg)))
 
 #ifndef	DMA_64BIT_MASK
 #define DMA_64BIT_MASK	0xffffffffffffffffULL
@@ -942,16 +949,6 @@ struct _kc_ethtool_pauseparam {
 
 /*****************************************************************************/
 
-#ifdef CONFIG_SMP
-#define rtl_wmb()	smp_wmb()
-#define rtl_rmb()	smp_rmb()
-#else
-#define rtl_wmb()	wmb()
-#define rtl_rmb()	rmb()
-#endif
-
-/* ----------------------------------------------------------- */
-
 enum RTL8101_DSM_STATE {
         DSM_MAC_INIT = 1,
         DSM_NIC_GOTO_D3 = 2,
@@ -1476,6 +1473,9 @@ struct rtl8101_private {
 
         u16 phy_reg_anlpar;
 
+        u32 eee_adv_t;
+        u8 eee_enabled;
+
 #ifdef ENABLE_R8101_PROCFS
         //Procfs support
         struct proc_dir_entry *proc_dir;
@@ -1546,12 +1546,12 @@ void rtl8101_mdio_prot_direct_write_phy_ocp(struct rtl8101_private *tp, u32 RegA
 u32 rtl8101_mdio_read(struct rtl8101_private *tp, u32 RegAddr);
 u32 rtl8101_mdio_prot_read(struct rtl8101_private *tp, u32 RegAddr);
 u32 rtl8101_mdio_prot_direct_read_phy_ocp(struct rtl8101_private *tp, u32 RegAddr);
-void rtl8101_ephy_write(void __iomem *ioaddr, u32 RegAddr, u32 value);
-u16 rtl8101_ephy_read(void __iomem *ioaddr, u32 RegAddr);
+void rtl8101_ephy_write(struct rtl8101_private *tp, u32 RegAddr, u32 value);
+u16 rtl8101_ephy_read(struct rtl8101_private *tp, u32 RegAddr);
 void rtl8101_mac_ocp_write(struct rtl8101_private *tp, u16 reg_addr, u16 value);
 u16 rtl8101_mac_ocp_read(struct rtl8101_private *tp, u16 reg_addr);
-int rtl8101_eri_write(void __iomem *ioaddr, int addr, int len, u32 value, int type);
-u32 rtl8101_eri_read(void __iomem *ioaddr, int addr, int len, int type);
+int rtl8101_eri_write(struct rtl8101_private *tp, int addr, int len, u32 value, int type);
+u32 rtl8101_eri_read(struct rtl8101_private *tp, int addr, int len, int type);
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,34)
 #define netdev_mc_count(dev) ((dev)->mc_count)

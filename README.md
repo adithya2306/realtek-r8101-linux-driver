@@ -1,11 +1,11 @@
 # Realtek R8101 linux driver source
 
-This is the official linux driver source for Realtek RTL8101E/RTL8102E/RTL8103E/RTL8105E/RTL8106E/RTL8107E FE 100M NICs, obtained from [here](https://www.realtek.com/en/component/zoo/category/network-interface-controllers-10-100-1000m-gigabit-ethernet-pci-express-software). Tested on Ubuntu 19.04 in my Dell Inspiron 1440 laptop, works flawlessly.
+This is the official linux driver source for Realtek RTL8101E/RTL8102E/RTL8103E/RTL8105E/RTL8106E/RTL8107E FE 100M NICs, obtained from [here](https://www.realtek.com/en/component/zoo/category/network-interface-controllers-10-100-1000m-gigabit-ethernet-pci-express-software). Tested on Ubuntu 20.04 in my Dell Inspiron 1440 laptop, ethernet works flawlessly with a speed of 95 Mbps upload and download.
 
-Since Ubuntu 18.x these NICs are being used with the default r8169 driver (which is for the R8169 gigabit ethernet controller only), which is causing terrible download and upload speeds. Installing the official driver for 810xE series fixes it.
+Since Ubuntu 18 these NICs are being used with the default r8169 driver (which is for the R8169 gigabit ethernet controller only), which causes terrible download and upload speeds. Installing the official driver for 810xE series fixes it.
 
-**Driver version**: 1.034  
-**Release date**: 21/06/2019
+**Driver version**: 1.035.02  
+**Release date**: 19/03/2020
 
 How to install this driver?
 ----

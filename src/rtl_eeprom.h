@@ -4,7 +4,7 @@
 # r8101 is the Linux device driver released for Realtek Fast Ethernet
 # controllers with PCI-Express interface.
 #
-# Copyright(c) 2019 Realtek Semiconductor Corp. All rights reserved.
+# Copyright(c) 2020 Realtek Semiconductor Corp. All rights reserved.
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -41,15 +41,15 @@
 #define	RTL_CLOCK_RATE	3
 
 void rtl8101_eeprom_type(struct rtl8101_private *tp);
-void rtl8101_eeprom_cleanup(void __iomem *ioaddr);
+void rtl8101_eeprom_cleanup(struct rtl8101_private *tp);
 u16 rtl8101_eeprom_read_sc(struct rtl8101_private *tp, u16 reg);
 void rtl8101_eeprom_write_sc(struct rtl8101_private *tp, u16 reg, u16 data);
-void rtl8101_shift_out_bits(int data, int count, void __iomem *ioaddr);
-u16 rtl8101_shift_in_bits(void __iomem *ioaddr);
-void rtl8101_raise_clock(u8 *x, void __iomem *ioaddr);
-void rtl8101_lower_clock(u8 *x, void __iomem *ioaddr);
-void rtl8101_stand_by(void __iomem *ioaddr);
-void rtl8101_set_eeprom_sel_low(void __iomem *ioaddr);
+void rtl8101_shift_out_bits(struct rtl8101_private *tp, int data, int count);
+u16 rtl8101_shift_in_bits(struct rtl8101_private *tp);
+void rtl8101_raise_clock(struct rtl8101_private *tp, u8 *x);
+void rtl8101_lower_clock(struct rtl8101_private *tp, u8 *x);
+void rtl8101_stand_by(struct rtl8101_private *tp);
+void rtl8101_set_eeprom_sel_low(struct rtl8101_private *tp);
 
 
 
