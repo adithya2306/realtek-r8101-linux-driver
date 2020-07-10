@@ -254,7 +254,11 @@ static void rtl8101_hw_start(struct net_device *dev);
 static void rtl8101_hw_config(struct net_device *dev);
 static int rtl8101_close(struct net_device *dev);
 static void rtl8101_set_rx_mode(struct net_device *dev);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)
+static void rtl8101_tx_timeout(struct net_device *dev, unsigned int txqueue);
+#else
 static void rtl8101_tx_timeout(struct net_device *dev);
+#endif
 static struct net_device_stats *rtl8101_get_stats(struct net_device *dev);
 static int rtl8101_rx_interrupt(struct net_device *, struct rtl8101_private *, napi_budget);
 static int rtl8101_change_mtu(struct net_device *dev, int new_mtu);
@@ -1282,12 +1286,22 @@ static int rtl8101_proc_open(struct inode *inode, struct file *file)
         return single_open(file, show, dev);
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)
+static const struct proc_ops rtl8101_proc_fops = {
+        .proc_open           = rtl8101_proc_open,
+        .proc_read           = seq_read,
+        .proc_lseek          = seq_lseek,
+        .proc_release        = single_release,
+};
+#else
 static const struct file_operations rtl8101_proc_fops = {
         .open           = rtl8101_proc_open,
         .read           = seq_read,
         .llseek         = seq_lseek,
         .release        = single_release,
 };
+#endif
+
 #endif
 
 /*
@@ -4397,6 +4411,9 @@ rtl_ethtool_set_eee(struct net_device *net, struct ethtool_eee *eee)
         default:
                 return -EOPNOTSUPP;
         }
+
+        if (!HW_HAS_WRITE_PHY_MCU_RAM_CODE(tp))
+                return -EOPNOTSUPP;
 
         spin_lock_irqsave(&tp->lock, flags);
 
@@ -9366,7 +9383,7 @@ rtl8101_hw_phy_config(struct net_device *dev)
                 rtl8101_mdio_write(tp, 0x14, (rtl8101_mdio_read(tp, 0x14) & ~0xFF00) | 0x8400);
 
                 if (aspm) {
-                        if (tp->HwHasWrRamCodeToMicroP == TRUE) {
+                        if (HW_HAS_WRITE_PHY_MCU_RAM_CODE(tp)) {
                                 rtl8101_mdio_write(tp, 0x1F, 0x0A43);
                                 rtl8101_mdio_write(tp, 0x10, rtl8101_mdio_read(tp, 0x10) | BIT_2);
                         }
@@ -9441,7 +9458,7 @@ rtl8101_hw_phy_config(struct net_device *dev)
                                     );
                 rtl8101_mdio_write(tp, 0x1F, 0x0000);
 
-                if (tp->HwHasWrRamCodeToMicroP) {
+                if (HW_HAS_WRITE_PHY_MCU_RAM_CODE(tp)) {
                         u16 dout_tapbin;
 
                         dout_tapbin = 0x0000;
@@ -9531,7 +9548,7 @@ rtl8101_hw_phy_config(struct net_device *dev)
                 rtl8101_mdio_write(tp, 0x1F, 0x0000);
 
                 if (aspm) {
-                        if (tp->HwHasWrRamCodeToMicroP == TRUE) {
+                        if (HW_HAS_WRITE_PHY_MCU_RAM_CODE(tp)) {
                                 rtl8101_mdio_write(tp, 0x1F, 0x0A43);
                                 rtl8101_set_eth_phy_bit( tp, 0x10, BIT_2 );
                                 rtl8101_mdio_write(tp, 0x1F, 0x0000);
@@ -9545,7 +9562,7 @@ rtl8101_hw_phy_config(struct net_device *dev)
                                       BIT_5 | BIT_4 | BIT_3 | BIT_2 | BIT_1 | BIT_0,
                                       0x0A );
 
-                if (tp->HwHasWrRamCodeToMicroP) {
+                if (HW_HAS_WRITE_PHY_MCU_RAM_CODE(tp)) {
                         rtl8101_mdio_write(tp, 0x1F, 0x0A43);
                         rtl8101_mdio_write(tp, 0x13, 0x8011);
                         rtl8101_set_eth_phy_bit(tp, 0x14, BIT_11);
@@ -9583,7 +9600,7 @@ rtl8101_hw_phy_config(struct net_device *dev)
                         rtl8101_mdio_write(tp, 0x1F, 0x0000);
                 }
 
-                if (tp->HwHasWrRamCodeToMicroP) {
+                if (HW_HAS_WRITE_PHY_MCU_RAM_CODE(tp)) {
                         rtl8101_mdio_write(tp, 0x1F, 0x0A43);
                         rtl8101_mdio_write(tp, 0x13, 0x85FE);
                         ClearAndSetEthPhyBit(
@@ -9606,7 +9623,7 @@ rtl8101_hw_phy_config(struct net_device *dev)
                 }
 
                 if (aspm) {
-                        if (tp->HwHasWrRamCodeToMicroP == TRUE) {
+                        if (HW_HAS_WRITE_PHY_MCU_RAM_CODE(tp)) {
                                 rtl8101_mdio_write(tp, 0x1F, 0x0A43);
                                 rtl8101_set_eth_phy_bit( tp, 0x10, BIT_2 );
                                 rtl8101_mdio_write(tp, 0x1F, 0x0000);
@@ -9643,7 +9660,7 @@ rtl8101_hw_phy_config(struct net_device *dev)
 
         rtl8101_mdio_write(tp, 0x1F, 0x0000);
 
-        if (tp->HwHasWrRamCodeToMicroP == TRUE) {
+        if (HW_HAS_WRITE_PHY_MCU_RAM_CODE(tp)) {
                 if (tp->eee_enabled == 1)
                         rtl8101_enable_EEE(tp);
                 else
@@ -12695,8 +12712,13 @@ static void rtl8101_reset_task(struct work_struct *work)
         }
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)
+static void
+rtl8101_tx_timeout(struct net_device *dev, unsigned int txqueue)
+#else
 static void
 rtl8101_tx_timeout(struct net_device *dev)
+#endif
 {
         struct rtl8101_private *tp = netdev_priv(dev);
         unsigned long flags;

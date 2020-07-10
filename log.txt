@@ -1,0 +1,30 @@
+-------------------------------
+Fri Jul 10 18:19:05 IST 2020
+make -C src/ clean
+make[1]: Entering directory '/home/adithya/realtek-r8101-linux-driver/src'
+make -C /lib/modules/5.7.0-6.4-liquorix-amd64/build M=/home/adithya/realtek-r8101-linux-driver/src clean
+make[2]: Entering directory '/usr/src/linux-headers-5.7.0-6.4-liquorix-amd64'
+  CLEAN   /home/adithya/realtek-r8101-linux-driver/src/Module.symvers
+make[2]: Leaving directory '/usr/src/linux-headers-5.7.0-6.4-liquorix-amd64'
+make[1]: Leaving directory '/home/adithya/realtek-r8101-linux-driver/src'
+make -C src/ modules
+make[1]: Entering directory '/home/adithya/realtek-r8101-linux-driver/src'
+make -C /lib/modules/5.7.0-6.4-liquorix-amd64/build M=/home/adithya/realtek-r8101-linux-driver/src modules
+make[2]: Entering directory '/usr/src/linux-headers-5.7.0-6.4-liquorix-amd64'
+  CC [M]  /home/adithya/realtek-r8101-linux-driver/src/r8101_n.o
+  CC [M]  /home/adithya/realtek-r8101-linux-driver/src/rtl_eeprom.o
+  CC [M]  /home/adithya/realtek-r8101-linux-driver/src/rtltool.o
+  LD [M]  /home/adithya/realtek-r8101-linux-driver/src/r8101.o
+  MODPOST 1 modules
+  CC [M]  /home/adithya/realtek-r8101-linux-driver/src/r8101.mod.o
+  LD [M]  /home/adithya/realtek-r8101-linux-driver/src/r8101.ko
+make[2]: Leaving directory '/usr/src/linux-headers-5.7.0-6.4-liquorix-amd64'
+make[1]: Leaving directory '/home/adithya/realtek-r8101-linux-driver/src'
+make -C src/ install
+make[1]: Entering directory '/home/adithya/realtek-r8101-linux-driver/src'
+make -C /lib/modules/5.7.0-6.4-liquorix-amd64/build M=/home/adithya/realtek-r8101-linux-driver/src INSTALL_MOD_DIR=kernel/drivers/net/ethernet/realtek modules_install
+make[2]: Entering directory '/usr/src/linux-headers-5.7.0-6.4-liquorix-amd64'
+  INSTALL /home/adithya/realtek-r8101-linux-driver/src/r8101.ko
+  DEPMOD  5.7.0-6.4-liquorix-amd64
+make[2]: Leaving directory '/usr/src/linux-headers-5.7.0-6.4-liquorix-amd64'
+make[1]: Leaving directory '/home/adithya/realtek-r8101-linux-driver/src'

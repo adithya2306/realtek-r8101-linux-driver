@@ -4,8 +4,8 @@ This is the official linux driver source for Realtek RTL8101E/RTL8102E/RTL8103E/
 
 Since Ubuntu 18 these NICs are being used with the default r8169 driver (which is for the R8169 gigabit ethernet controller only), which causes terrible download and upload speeds. Installing the official driver for 810xE series fixes it.
 
-**Driver version**: 1.035.02  
-**Release date**: 19/03/2020
+**Driver version**: 1.035.03  
+**Release date**: 26/05/2020
 
 How to install this driver?
 ----

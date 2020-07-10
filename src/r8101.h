@@ -312,7 +312,7 @@ do { \
 #define NAPI_SUFFIX		""
 #endif
 
-#define RTL8101_VERSION "1.035.02" NAPI_SUFFIX
+#define RTL8101_VERSION "1.035.03" NAPI_SUFFIX
 #define MODULENAME "r8101"
 #define PFX MODULENAME ": "
 
@@ -1552,6 +1552,8 @@ void rtl8101_mac_ocp_write(struct rtl8101_private *tp, u16 reg_addr, u16 value);
 u16 rtl8101_mac_ocp_read(struct rtl8101_private *tp, u16 reg_addr);
 int rtl8101_eri_write(struct rtl8101_private *tp, int addr, int len, u32 value, int type);
 u32 rtl8101_eri_read(struct rtl8101_private *tp, int addr, int len, int type);
+
+#define HW_HAS_WRITE_PHY_MCU_RAM_CODE(_M)        (((_M)->HwHasWrRamCodeToMicroP == TRUE) ? 1 : 0)
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,34)
 #define netdev_mc_count(dev) ((dev)->mc_count)
