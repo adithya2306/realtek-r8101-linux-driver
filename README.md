@@ -7,6 +7,8 @@ Since Ubuntu 18 these NICs are being used with the default r8169 driver (which i
 **Driver version**: 1.035.03  
 **Release date**: 26/05/2020
 
+**NOTE: I upgraded to another laptop few months ago so I'm no longer maintaining this repo.**
+
 How to install this driver?
 ----
 * First of all, clone this repo to some folder and cd into that folder
